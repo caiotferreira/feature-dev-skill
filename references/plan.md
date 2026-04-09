@@ -12,9 +12,10 @@ A developer (or an AI agent) must be able to execute this plan step by step with
 
 - `<slug> <issue-id>`: provided as the command argument.
   Examples: `/plan pos-venda proto-01`, `/plan pos-venda func-02`
-- `docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: the issue to plan
+  The `<issue-id>` is optional — if omitted and no issues exist, a feature-level plan is produced from `research.md`.
+- `docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: the issue to plan (optional)
 - `docs/features/feature-<N>-<slug>/spec.md`: full feature specification
-- `docs/features/feature-<N>-<slug>/research.md`: codebase research (if it exists)
+- `docs/features/feature-<N>-<slug>/research.md`: codebase research (required when no issue is provided)
 
 ---
 
@@ -27,30 +28,52 @@ Scan `docs/features/` for a folder whose name contains the provided slug.
 - If multiple folders match, list them and ask the user to clarify.
 - If no folder matches, report the error and list all existing feature folders.
 
-Then resolve the issue file inside `docs/features/feature-<N>-<slug>/issues/`:
-- Search for a file whose name contains the issue-id (e.g. `proto-01`, `func-02`).
+Then resolve the issue file:
+
+**If an issue-id was provided:**
+- Search inside `docs/features/feature-<N>-<slug>/issues/` for a file whose name contains the issue-id.
 - If exactly one match is found, use it.
 - If no match is found, list all files in the `issues/` folder and ask the user to pick one.
 
-If no issue-id was provided, list all files in `issues/` and ask the user to specify one.
+**If no issue-id was provided:**
+- Check whether `docs/features/feature-<N>-<slug>/issues/` exists and contains any files.
+- If issues exist, list them and ask the user to specify one.
+- If no issues exist (folder is absent or empty), ask:
+  ```
+  No issues found for feature-<N>-<slug>. /break has not been run.
+
+  Do you want to proceed and generate a plan directly from research.md?
+  This is suitable for simple implementations that don't need issue breakdown. (y/n)
+  ```
+  - If the user says **no**: stop and suggest running `/break <slug>` first.
+  - If the user says **yes**: continue in **issueless mode** — the plan will be based on `spec.md` + `research.md` only.
 
 ### Step 2: Read all context documents fully
 
 Read in this order, completely, before doing anything else:
 
+**Issue mode (normal):**
 1. The resolved issue file
 2. `docs/features/feature-<N>-<slug>/spec.md`
 3. `docs/features/feature-<N>-<slug>/research.md` (if it exists — skip silently if not)
 
-If `spec.md` doesn't exist, respond:
+**Issueless mode:**
+1. `docs/features/feature-<N>-<slug>/spec.md`
+2. `docs/features/feature-<N>-<slug>/research.md` (required — if it doesn't exist, respond:
+   ```
+   research.md not found. Run /research <slug> first, then /plan <slug>.
+   ```
+   and stop)
+
+If `spec.md` doesn't exist in either mode, respond:
 ```
 spec.md not found in docs/features/feature-<N>-<slug>/.
-Run /spec first, then /break, then /plan <slug> <issue-id>.
+Run /spec first, then /plan <slug>.
 ```
 
 ### Step 3: Explore the codebase for this issue's scope
 
-Based on what the issue requires, explore the relevant parts of the codebase:
+Based on what the issue (or feature, in issueless mode) requires, explore the relevant parts of the codebase:
 
 **For prototype issues**:
 - Find existing UI components that can be reused (look for component libraries, design system files, similar screens)
@@ -63,6 +86,10 @@ Based on what the issue requires, explore the relevant parts of the codebase:
 - Find relevant database models, schemas, or API routes
 - Identify form submission patterns and error handling conventions
 - Find any existing service or hook that handles similar logic
+
+**In issueless mode**:
+- Use `research.md` as the primary codebase map — avoid redundant re-exploration of what it already covers
+- Focus additional exploration only on gaps or specific files referenced in `spec.md` that `research.md` doesn't address
 
 Read all relevant files fully. Never use offset or truncation.
 
@@ -95,9 +122,23 @@ Break implementation into phases where:
 
 Before writing the full plan, show the user:
 
+**Issue mode:**
 ```
 Issue: <issue-id> — <Issue Title>
 Type: prototype | functional
+
+Proposed phases:
+
+Phase 1: [name] — [one sentence goal]
+Phase 2: [name] — [one sentence goal]
+Phase 3: [name] — [one sentence goal]
+
+Does this look right? Should I adjust before I write the full plan?
+```
+
+**Issueless mode:**
+```
+Feature: <slug> (no issue breakdown — planning from research.md)
 
 Proposed phases:
 
@@ -112,16 +153,22 @@ Wait for confirmation before proceeding.
 
 ### Step 7: Write the plan file
 
-Write `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md` with this structure:
+**Issue mode:** Write `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`
+
+**Issueless mode:** Write `docs/features/feature-<N>-<slug>/plan.md`
+
+Use this structure:
 
 ```markdown
-# Plan: <Issue Title>
+# Plan: <Issue Title or Feature Name>
 
 **Date**: YYYY-MM-DD
-**Issue**: `docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
+**Issue**: `docs/features/feature-<N>-<slug>/issues/<issue-file>.md` ← omit in issueless mode
 **Spec**: `docs/features/feature-<N>-<slug>/spec.md`
+**Research**: `docs/features/feature-<N>-<slug>/research.md`
 **Feature**: feature-<N>-<slug>
-**Type**: prototype | functional
+**Type**: prototype | functional | feature ← use "feature" in issueless mode
+**Mode**: issue-based | issueless
 **Status**: ready
 
 ---
@@ -196,6 +243,7 @@ Write `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md` with thi
 
 After writing the plan file, respond:
 
+**Issue mode:**
 ```
 Plan complete. Artifact saved to:
   docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md
@@ -203,6 +251,16 @@ Plan complete. Artifact saved to:
 Next step:
   /clear
   /implement <slug> <issue-id>
+```
+
+**Issueless mode:**
+```
+Plan complete. Artifact saved to:
+  docs/features/feature-<N>-<slug>/plan.md
+
+Next step:
+  /clear
+  /implement <slug>
 ```
 
 ---
@@ -214,6 +272,8 @@ Next step:
 - All open questions must be resolved before writing.
 - For prototype issues: the plan must never include API calls, database writes, or business logic.
 - For functional issues: the plan must reference the specific prototype files it will modify.
+- In issueless mode: the plan covers the full feature scope defined in `spec.md` and `research.md`. It is not tied to a single issue, but must still be broken into clearly scoped phases.
 - Code blocks in the plan should be illustrative but accurate — read the actual files to write them.
 - Success criteria must separate automated checks (runnable commands) from manual checks (human verification).
-- Each plan file is scoped to exactly one issue. Never plan two issues in the same file.
+- In issue mode: each plan file is scoped to exactly one issue. Never plan two issues in the same file.
+- Running `/break` is not required before `/plan`. When skipped, issueless mode applies.
