@@ -13,9 +13,9 @@ A developer (or an AI agent) must be able to execute this plan step by step with
 - `<slug> <issue-id>`: provided as the command argument.
   Examples: `/plan pos-venda proto-01`, `/plan pos-venda func-02`
   The `<issue-id>` is optional — if omitted and no issues exist, a feature-level plan is produced from `research.md`.
-- `docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: the issue to plan (optional)
-- `docs/features/feature-<N>-<slug>/spec.md`: full feature specification
-- `docs/features/feature-<N>-<slug>/research.md`: codebase research (required when no issue is provided)
+- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: the issue to plan (optional)
+- `.docs/features/feature-<N>-<slug>/spec.md`: full feature specification
+- `.docs/features/feature-<N>-<slug>/research.md`: codebase research (required when no issue is provided)
 
 ---
 
@@ -23,20 +23,20 @@ A developer (or an AI agent) must be able to execute this plan step by step with
 
 ### Step 1: Resolve the feature folder and issue file
 
-Scan `docs/features/` for a folder whose name contains the provided slug.
-- If exactly one match is found, use it. Announce: `Resolved to: docs/features/feature-<N>-<slug>/`
+Scan `.docs/features/` for a folder whose name contains the provided slug.
+- If exactly one match is found, use it. Announce: `Resolved to: .docs/features/feature-<N>-<slug>/`
 - If multiple folders match, list them and ask the user to clarify.
 - If no folder matches, report the error and list all existing feature folders.
 
 Then resolve the issue file:
 
 **If an issue-id was provided:**
-- Search inside `docs/features/feature-<N>-<slug>/issues/` for a file whose name contains the issue-id.
+- Search inside `.docs/features/feature-<N>-<slug>/issues/` for a file whose name contains the issue-id.
 - If exactly one match is found, use it.
 - If no match is found, list all files in the `issues/` folder and ask the user to pick one.
 
 **If no issue-id was provided:**
-- Check whether `docs/features/feature-<N>-<slug>/issues/` exists and contains any files.
+- Check whether `.docs/features/feature-<N>-<slug>/issues/` exists and contains any files.
 - If issues exist, list them and ask the user to specify one.
 - If no issues exist (folder is absent or empty), ask:
   ```
@@ -54,12 +54,12 @@ Read in this order, completely, before doing anything else:
 
 **Issue mode (normal):**
 1. The resolved issue file
-2. `docs/features/feature-<N>-<slug>/spec.md`
-3. `docs/features/feature-<N>-<slug>/research.md` (if it exists — skip silently if not)
+2. `.docs/features/feature-<N>-<slug>/spec.md`
+3. `.docs/features/feature-<N>-<slug>/research.md` (if it exists — skip silently if not)
 
 **Issueless mode:**
-1. `docs/features/feature-<N>-<slug>/spec.md`
-2. `docs/features/feature-<N>-<slug>/research.md` (required — if it doesn't exist, respond:
+1. `.docs/features/feature-<N>-<slug>/spec.md`
+2. `.docs/features/feature-<N>-<slug>/research.md` (required — if it doesn't exist, respond:
    ```
    research.md not found. Run /research <slug> first, then /plan <slug>.
    ```
@@ -67,7 +67,7 @@ Read in this order, completely, before doing anything else:
 
 If `spec.md` doesn't exist in either mode, respond:
 ```
-spec.md not found in docs/features/feature-<N>-<slug>/.
+spec.md not found in .docs/features/feature-<N>-<slug>/.
 Run /spec first, then /plan <slug>.
 ```
 
@@ -153,9 +153,9 @@ Wait for confirmation before proceeding.
 
 ### Step 7: Write the plan file
 
-**Issue mode:** Write `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`
+**Issue mode:** Write `.docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md`
 
-**Issueless mode:** Write `docs/features/feature-<N>-<slug>/plan.md`
+**Issueless mode:** Write `.docs/features/feature-<N>-<slug>/plan.md`
 
 Use this structure:
 
@@ -163,9 +163,9 @@ Use this structure:
 # Plan: <Issue Title or Feature Name>
 
 **Date**: YYYY-MM-DD
-**Issue**: `docs/features/feature-<N>-<slug>/issues/<issue-file>.md` ← omit in issueless mode
-**Spec**: `docs/features/feature-<N>-<slug>/spec.md`
-**Research**: `docs/features/feature-<N>-<slug>/research.md`
+**Issue**: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md` ← omit in issueless mode
+**Spec**: `.docs/features/feature-<N>-<slug>/spec.md`
+**Research**: `.docs/features/feature-<N>-<slug>/research.md`
 **Feature**: feature-<N>-<slug>
 **Type**: prototype | functional | feature ← use "feature" in issueless mode
 **Mode**: issue-based | issueless
@@ -234,8 +234,8 @@ Use this structure:
 
 ## References
 
-- Issue: `docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
-- Spec: `docs/features/feature-<N>-<slug>/spec.md`
+- Issue: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
+- Spec: `.docs/features/feature-<N>-<slug>/spec.md`
 - [Any specific file:line references used as anchors during planning]
 ```
 
@@ -246,7 +246,7 @@ After writing the plan file, respond:
 **Issue mode:**
 ```
 Plan complete. Artifact saved to:
-  docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md
+  .docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md
 
 Next step:
   /clear
@@ -256,7 +256,7 @@ Next step:
 **Issueless mode:**
 ```
 Plan complete. Artifact saved to:
-  docs/features/feature-<N>-<slug>/plan.md
+  .docs/features/feature-<N>-<slug>/plan.md
 
 Next step:
   /clear

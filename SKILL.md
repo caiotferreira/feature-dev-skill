@@ -14,14 +14,14 @@ description: >
 A five-command workflow to build new features with full specification, structured breakdown into issues,
 codebase research, per-issue planning, and clean implementation.
 Each command is designed to be run in a fresh context window (`/clear` between them), and all artifacts are
-organized under `docs/features/` in the project root, with auto-numbered folders.
+organized under `.docs/features/` in the project root, with auto-numbered folders.
 
 ---
 
 ## Folder Structure
 
 ```
-docs/features/
+.docs/features/
 ├── feature-1-pos-venda-clientes/
 │   ├── spec.md
 │   ├── issues/
@@ -45,7 +45,7 @@ Folder naming convention: `feature-<N>-<slug>` where N is an auto-incremented in
 
 ### On `/spec` (creates the folder)
 
-Before creating any file, scan `docs/features/` for folders matching `feature-<N>-*`.
+Before creating any file, scan `.docs/features/` for folders matching `feature-<N>-*`.
 Extract all N values, take the maximum, and use N+1 for the new folder.
 If no folders exist yet, start at 1.
 
@@ -60,7 +60,7 @@ Examples:
 ### On `/break`, `/plan`, and `/implement` (resolve existing folder)
 
 The user passes only the slug (e.g. `/plan pos-venda proto-01`).
-Search `docs/features/` for any folder whose name contains the slug.
+Search `.docs/features/` for any folder whose name contains the slug.
 Use that folder — do not require the user to type the number prefix.
 
 If multiple folders match, list them and ask the user to clarify.
@@ -167,7 +167,7 @@ implementation log.
 
 ## Conventions
 
-- Always create `docs/features/` if it does not exist.
+- Always create `.docs/features/` if it does not exist.
 - Always create the feature folder before writing any artifact inside it.
 - Always create the `issues/` subfolder before writing any issue file.
 - Slugs are lowercase kebab-case derived from the feature description.

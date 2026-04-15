@@ -12,9 +12,9 @@ Write a final implementation log documenting what was done.
 
 - `<slug> <issue-id>`: provided as the command argument.
   Examples: `/implement pos-venda proto-01`, `/implement pos-venda func-02`
-- `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`: must exist before this command runs
-- `docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: read for acceptance criteria
-- `docs/features/feature-<N>-<slug>/spec.md`: read for broader context
+- `.docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`: must exist before this command runs
+- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: read for acceptance criteria
+- `.docs/features/feature-<N>-<slug>/spec.md`: read for broader context
 
 ---
 
@@ -22,17 +22,17 @@ Write a final implementation log documenting what was done.
 
 ### Step 1: Resolve the feature folder and plan file
 
-Scan `docs/features/` for a folder whose name contains the provided slug.
-- If exactly one match is found, use it. Announce: `Resolved to: docs/features/feature-<N>-<slug>/`
+Scan `.docs/features/` for a folder whose name contains the provided slug.
+- If exactly one match is found, use it. Announce: `Resolved to: .docs/features/feature-<N>-<slug>/`
 - If multiple folders match, list them and ask the user to clarify.
 - If no folder matches, report the error and list all existing feature folders.
 
-Then resolve the plan file inside `docs/features/feature-<N>-<slug>/`:
+Then resolve the plan file inside `.docs/features/feature-<N>-<slug>/`:
 - Search for a file whose name matches `plan-<issue-id>-*.md`.
 - If exactly one match is found, use it.
 - If no match is found, respond:
   ```
-  plan-<issue-id>-*.md not found in docs/features/feature-<N>-<slug>/.
+  plan-<issue-id>-*.md not found in .docs/features/feature-<N>-<slug>/.
   Run /plan <slug> <issue-id> first, then /clear, then /implement <slug> <issue-id>.
   ```
 
@@ -54,16 +54,68 @@ If some phases are already done, pick up from the first unchecked item.
 Before writing any code, read every file that the plan references.
 Read them fully. Direct knowledge of the existing code is required to implement correctly.
 
-### Step 4: Build a task list
+### Step 4: Check and select the working branch
+
+Before writing any code, determine which branch the implementation will land on.
+
+**4a. List existing branches related to this work**
+
+Run:
+```
+git branch --list
+git branch -r --list
+```
+
+Look for branches that match:
+- The feature slug (e.g. `feature/pos-venda`, `feat/pos-venda`)
+- The issue id (e.g. `proto-01`, `func-02`)
+- Any combination (e.g. `feature/pos-venda/proto-01`)
+
+**4b. Ask the user**
+
+Present the findings and ask:
+
+```
+Before I start implementing, let me check the branch setup.
+
+Current branch: <current-branch>
+
+Branches related to this work:
+  - <branch-a>
+  - <branch-b>
+  (or: "None found matching this feature/issue")
+
+Which branch should I implement and commit to?
+  1. Use current branch (<current-branch>)
+  2. Switch to an existing branch (list them)
+  3. Create a new branch — what should it be named?
+
+Please choose an option.
+```
+
+Wait for the user's answer before continuing.
+
+**4c. Switch or create the branch if needed**
+
+- If the user picks an existing branch: `git checkout <branch>`
+- If the user wants a new branch: `git checkout -b <branch-name>`
+- If the user picks the current branch: no action needed
+
+Confirm the active branch before proceeding:
+```
+Now on branch: <branch>. Proceeding with implementation.
+```
+
+### Step 5: Build a task list
 
 Create a todo list tracking each phase and its success criteria.
 This helps maintain progress across the implementation session.
 
-### Step 5: Implement phase by phase
+### Step 6: Implement phase by phase
 
 For each phase in the plan:
 
-**5a. Implement the changes**
+**6a. Implement the changes**
 - Make exactly the changes described in the plan for this phase
 - Follow the patterns identified in `research.md` and referenced files
 - For prototype issues: never add real API calls, database access, or business logic — even if it would be easy
@@ -81,12 +133,12 @@ How should I proceed?
 ```
 Wait for guidance before continuing.
 
-**5b. Run automated verification**
+**6b. Run automated verification**
 - Run every command listed in the phase's "Automated" success criteria
 - Fix any failures before proceeding — do not move to the next phase with failing checks
 - Check off each passing item in the plan file using file edits
 
-**5c. Pause for manual verification**
+**6c. Pause for manual verification**
 After all automated checks pass, pause and tell the user:
 
 ```
@@ -106,7 +158,7 @@ Wait for explicit confirmation before starting the next phase.
 Exception: if the user instructed you to run multiple phases consecutively (e.g. "implement all phases"),
 skip the pause until the final phase.
 
-### Step 6: Verify issue acceptance criteria
+### Step 7: Verify issue acceptance criteria
 
 After all phases are complete, go back to the issue file and check each acceptance criterion:
 - Run any automated checks listed there
@@ -114,17 +166,17 @@ After all phases are complete, go back to the issue file and check each acceptan
 
 Do not write the implementation log until the user confirms all manual acceptance criteria are met.
 
-### Step 7: Write the implementation log
+### Step 8: Write the implementation log
 
-Write `docs/features/feature-<N>-<slug>/implementation-<issue-id>-<page-slug>.md`:
+Write `docs/features/summary/<issue-id>-<page-slug>.md`:
 
 ```markdown
 # Implementation Log: <Issue Title>
 
 **Date**: YYYY-MM-DD
-**Issue**: `docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
-**Plan**: `docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`
-**Feature**: feature-<N>-<slug>
+**Issue**: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
+**Plan**: `.docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md`
+**Feature**: `.docs/features/feature-<N>-<slug>/`
 **Type**: prototype | functional
 **Status**: complete
 
@@ -168,18 +220,18 @@ Write `docs/features/feature-<N>-<slug>/implementation-<issue-id>-<page-slug>.md
 [The next issue to implement, e.g. "proto-02 is next" or "func-01 can now start". "None" if this was the last issue.]
 ```
 
-### Step 8: Close
+### Step 9: Close
 
 After writing the implementation log, respond:
 
 ```
 Implementation complete.
 
-  docs/features/feature-<N>-<slug>/
+  .docs/features/feature-<N>-<slug>/
   └── issues/
-      └── <issue-file>.md       ✓ (acceptance criteria met)
-  plan-<issue-id>-<page-slug>.md ✓
-  implementation-<issue-id>-<page-slug>.md ✓
+      └── <issue-file>.md              ✓ (acceptance criteria met)
+  plan-<issue-id>-<page-slug>.md       ✓
+  docs/features/summary/<issue-id>-<page-slug>.md ✓
 
 Next step:
   /clear

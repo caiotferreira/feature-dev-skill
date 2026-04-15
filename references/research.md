@@ -21,10 +21,10 @@ for the planning step.
 
 Before creating any file, resolve the correct folder name.
 
-**Scan `docs/features/`** for existing folders matching the pattern `feature-<N>-*`.
+**Scan `.docs/features/`** for existing folders matching the pattern `feature-<N>-*`.
 - Extract all N values (they are integers in the folder name prefix).
 - Take the maximum N found and use N+1 for the new folder.
-- If `docs/features/` does not exist or has no matching folders, start at N=1.
+- If `.docs/features/` does not exist or has no matching folders, start at N=1.
 
 **If the user explicitly mentioned a number** (e.g. "isso é a feature 5", "feature 5", "#5"), use that number
 directly, regardless of what already exists.
@@ -32,13 +32,13 @@ directly, regardless of what already exists.
 Derive the slug from the feature description: short, lowercase, kebab-case.
 Examples: "adicionar autenticação OAuth" → `oauth-auth`; "refund flow for payments" → `payments-refund`.
 
-Construct the folder path: `docs/features/feature-<N>-<slug>/`
+Construct the folder path: `.docs/features/feature-<N>-<slug>/`
 
-Create the folder (and `docs/features/` if it doesn't exist yet).
+Create the folder (and `.docs/features/` if it doesn't exist yet).
 
 Announce to the user:
 ```
-Creating feature folder: docs/features/feature-<N>-<slug>/
+Creating feature folder: .docs/features/feature-<N>-<slug>/
 ```
 
 ### Step 2: Explore the codebase systematically
@@ -71,7 +71,7 @@ Research the following areas. Be thorough. Read files fully — never use offset
 
 ### Step 3: Document findings
 
-Write `docs/features/feature-<N>-<slug>/research.md` with this structure:
+Write `.docs/features/feature-<N>-<slug>/research.md` with this structure:
 
 ```markdown
 # Research: <Feature Name>
@@ -141,7 +141,7 @@ After writing `research.md`, respond:
 
 ```
 Research complete. Artifact saved to:
-  docs/features/feature-<N>-<slug>/research.md
+  .docs/features/feature-<N>-<slug>/research.md
 
 Next step:
   /clear

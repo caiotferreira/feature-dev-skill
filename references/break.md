@@ -11,7 +11,7 @@ to real data, APIs, and backend logic). Each issue becomes the input unit for `/
 ## Inputs
 
 - `<slug>`: provided as the command argument (partial name, without the `feature-<N>-` prefix)
-- `docs/features/feature-<N>-<slug>/spec.md`: must exist before this command runs
+- `.docs/features/feature-<N>-<slug>/spec.md`: must exist before this command runs
 
 ---
 
@@ -19,27 +19,27 @@ to real data, APIs, and backend logic). Each issue becomes the input unit for `/
 
 ### Step 1: Resolve the feature folder
 
-Scan `docs/features/` for a folder whose name contains the provided slug.
+Scan `.docs/features/` for a folder whose name contains the provided slug.
 - Match is case-insensitive and partial: `/break pos-venda` should find `feature-3-pos-venda-clientes`.
 - If exactly one match is found, use it. Announce: `Resolved to: docs/features/feature-<N>-<slug>/`
 - If multiple folders match, list them and ask the user to clarify.
 - If no folder matches, report the error and list all existing feature folders.
 
-If no slug was provided, list all folders under `docs/features/` and ask the user to pick one.
+If no slug was provided, list all folders under `.docs/features/` and ask the user to pick one.
 
 ### Step 2: Read spec.md fully
 
-Read `docs/features/feature-<N>-<slug>/spec.md` completely before doing anything else.
+Read `.docs/features/feature-<N>-<slug>/spec.md` completely before doing anything else.
 
 If the file doesn't exist, respond:
 ```
-spec.md not found in docs/features/feature-<N>-<slug>/.
+spec.md not found in .docs/features/feature-<N>-<slug>/.
 Run /spec first, then /clear, then /break <slug>.
 ```
 
 ### Step 3: Create the issues folder
 
-Create `docs/features/feature-<N>-<slug>/issues/` if it does not exist.
+Create `.docs/features/feature-<N>-<slug>/issues/` if it does not exist.
 
 ### Step 4: Generate Batch 1 — Prototype Issues
 

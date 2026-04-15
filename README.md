@@ -73,6 +73,10 @@ A guard rule enforces the proto/func boundary: if a prototype implementation sta
 
 ```
 docs/features/
+├── summary/
+│   ├── proto-01-tela-dashboard.md
+│   ├── func-01-tela-dashboard.md
+│   └── ...
 └── feature-1-pos-venda-clientes/
     ├── spec.md
     ├── research.md
@@ -82,10 +86,10 @@ docs/features/
     │   ├── func-01-tela-dashboard.md
     │   └── func-02-tela-clientes.md
     ├── plan-proto-01-tela-dashboard.md
-    ├── plan-func-01-tela-dashboard.md
-    ├── implementation-proto-01-tela-dashboard.md
-    └── implementation-func-01-tela-dashboard.md
+    └── plan-func-01-tela-dashboard.md
 ```
+
+After each `/implement` run, the implementation log is written to `docs/features/summary/<issue-id>-<page-slug>.md`. This keeps a flat, cross-feature summary index at the project root level, separate from the per-feature planning artifacts.
 
 ---
 
