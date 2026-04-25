@@ -2,46 +2,49 @@
 
 ## Goal
 
-Conduct comprehensive research across the codebase to understand the full impact of implementing
-the requested feature. Produce a `research.md` document that becomes the single source of truth
-for the planning step.
+Understand the full codebase impact of the feature before planning individual issues.
+Reads `spec.md` and all issue files for context, then explores the codebase systematically.
+Produces a `research.md` document that becomes the reference for all subsequent `/plan` steps.
 
 ---
 
 ## Inputs
 
-- Feature description: provided by the user as the command argument
-- Full codebase: read-only exploration
+- `<slug>`: provided as the command argument
+- `.docs/features/feature-<N>-<slug>/spec.md`: full feature specification
+- `.docs/features/feature-<N>-<slug>/issues/`: all issue files created by `/break`
 
 ---
 
 ## Step-by-Step Process
 
-### Step 1: Determine the feature folder
+### Step 1: Resolve the feature folder
 
-Before creating any file, resolve the correct folder name.
+Scan `.docs/features/` for a folder whose name contains the provided slug.
+- Match is case-insensitive and partial: `/research pos-venda` should find `feature-3-pos-venda-clientes`.
+- If exactly one match is found, use it. Announce: `Resolved to: .docs/features/feature-<N>-<slug>/`
+- If multiple folders match, list them and ask the user to clarify.
+- If no folder matches, report the error and list all existing feature folders.
 
-**Scan `.docs/features/`** for existing folders matching the pattern `feature-<N>-*`.
-- Extract all N values (they are integers in the folder name prefix).
-- Take the maximum N found and use N+1 for the new folder.
-- If `.docs/features/` does not exist or has no matching folders, start at N=1.
+If no slug was provided, list all folders under `.docs/features/` and ask the user to pick one.
 
-**If the user explicitly mentioned a number** (e.g. "isso é a feature 5", "feature 5", "#5"), use that number
-directly, regardless of what already exists.
+### Step 2: Read spec.md and all issue files fully
 
-Derive the slug from the feature description: short, lowercase, kebab-case.
-Examples: "adicionar autenticação OAuth" → `oauth-auth`; "refund flow for payments" → `payments-refund`.
+Read in this order, completely, before exploring the codebase:
 
-Construct the folder path: `.docs/features/feature-<N>-<slug>/`
+1. `.docs/features/feature-<N>-<slug>/spec.md`
+2. All files inside `.docs/features/feature-<N>-<slug>/issues/` (proto and func issues)
 
-Create the folder (and `.docs/features/` if it doesn't exist yet).
-
-Announce to the user:
+If `spec.md` doesn't exist, respond:
 ```
-Creating feature folder: .docs/features/feature-<N>-<slug>/
+spec.md not found in .docs/features/feature-<N>-<slug>/.
+Run /spec first, then /break <slug>, then /research <slug>.
 ```
 
-### Step 2: Explore the codebase systematically
+If the `issues/` folder is empty or doesn't exist, continue — research is still useful without issues,
+but note it in the output.
+
+### Step 3: Explore the codebase systematically
 
 Research the following areas. Be thorough. Read files fully — never use offset/limit truncation.
 
@@ -55,8 +58,13 @@ Research the following areas. Be thorough. Read files fully — never use offset
 - Which API endpoints or services are involved?
 - Which tests currently cover the affected areas?
 
+**Component inventory**
+- For each component listed in the spec, search the codebase to determine if it already exists
+- Note the exact file path if found, or mark as "needs to be created"
+- Look for partial matches too (e.g. a similar component that can be extended)
+
 **Pattern discovery**
-- Find 2-3 similar features already implemented in the codebase to use as reference
+- Find 2–3 similar features already implemented in the codebase to use as reference
 - Note conventions: naming, file structure, error handling, logging, testing patterns
 - Identify any abstractions or utilities that the new feature should reuse
 
@@ -69,7 +77,7 @@ Research the following areas. Be thorough. Read files fully — never use offset
 - Performance concerns
 - Security implications
 
-### Step 3: Document findings
+### Step 4: Document findings
 
 Write `.docs/features/feature-<N>-<slug>/research.md` with this structure:
 
@@ -82,7 +90,7 @@ Write `.docs/features/feature-<N>-<slug>/research.md` with this structure:
 
 ## Feature Summary
 
-[One paragraph describing what the feature is and why it's needed, based on the user's description]
+[One paragraph describing what the feature is and why it's needed, based on spec.md and the issues]
 
 ## Codebase Overview
 
@@ -101,6 +109,14 @@ Write `.docs/features/feature-<N>-<slug>/research.md` with this structure:
 
 ### API / Interface Changes
 [New or modified endpoints, events, or public interfaces. "None" if not applicable.]
+
+## Component Inventory
+
+For each component listed in the spec:
+
+| Component | Page | Exists? | Location |
+|-----------|------|---------|----------|
+| <Component Name> | <Page> | Yes / No | `path/to/component.ext` or "needs to be created" |
 
 ## Existing Patterns to Follow
 
@@ -135,7 +151,7 @@ Write `.docs/features/feature-<N>-<slug>/research.md` with this structure:
 | `path/file` | description |
 ```
 
-### Step 4: Confirm and close
+### Step 5: Confirm and close
 
 After writing `research.md`, respond:
 
@@ -143,9 +159,11 @@ After writing `research.md`, respond:
 Research complete. Artifact saved to:
   .docs/features/feature-<N>-<slug>/research.md
 
+Components inventoried: [N] existing, [N] to be created
+
 Next step:
   /clear
-  /plan <slug>
+  /plan <slug> proto-01
 ```
 
 ---
@@ -157,4 +175,4 @@ Next step:
 - Read every relevant file fully before documenting it.
 - Include specific file paths and line numbers wherever possible.
 - If you find something ambiguous, document it as an open question rather than assuming.
-
+- The component inventory is mandatory — `/plan` relies on it to know what needs to be built from scratch.

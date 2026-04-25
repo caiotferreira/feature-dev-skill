@@ -2,9 +2,9 @@
 
 ## Goal
 
-Execute a specific issue's plan file phase by phase with precision.
+Execute a specific issue's plan phase by phase with precision.
 Verify each phase before proceeding to the next.
-Write a final implementation log documenting what was done.
+At the end, present a test summary and ask the user whether to write a documentation log.
 
 ---
 
@@ -12,41 +12,46 @@ Write a final implementation log documenting what was done.
 
 - `<slug> <issue-id>`: provided as the command argument.
   Examples: `/implement pos-venda proto-01`, `/implement pos-venda func-02`
-- `.docs/features/feature-<N>-<slug>/plan-<issue-id>-<page-slug>.md`: must exist before this command runs
-- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: read for acceptance criteria
+- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<slug>.md`: the issue file — contains both
+  the description and the implementation plan appended by `/plan`
 - `.docs/features/feature-<N>-<slug>/spec.md`: read for broader context
 
 ---
 
 ## Step-by-Step Process
 
-### Step 1: Resolve the feature folder and plan file
+### Step 1: Resolve the feature folder and issue file
 
 Scan `.docs/features/` for a folder whose name contains the provided slug.
 - If exactly one match is found, use it. Announce: `Resolved to: .docs/features/feature-<N>-<slug>/`
 - If multiple folders match, list them and ask the user to clarify.
 - If no folder matches, report the error and list all existing feature folders.
 
-Then resolve the plan file inside `.docs/features/feature-<N>-<slug>/`:
-- Search for a file whose name matches `plan-<issue-id>-*.md`.
+Then resolve the issue file inside `.docs/features/feature-<N>-<slug>/issues/`:
+- Search for a file whose name contains the issue-id.
 - If exactly one match is found, use it.
-- If no match is found, respond:
-  ```
-  plan-<issue-id>-*.md not found in .docs/features/feature-<N>-<slug>/.
-  Run /plan <slug> <issue-id> first, then /clear, then /implement <slug> <issue-id>.
-  ```
+- If no match is found, list all files in `issues/` and ask the user to pick one.
 
-If no issue-id was provided, list all `plan-*.md` files in the feature folder and ask the user to pick one.
+Check that the issue file contains an `## Implementation Plan` section.
+If it doesn't, respond:
+```
+No implementation plan found in <issue-file>.md.
+Run /plan <slug> <issue-id> first, then /clear, then /implement <slug> <issue-id>.
+```
 
-### Step 2: Read the plan, issue, and spec fully
+If no issue-id was provided, list all issue files and ask the user to pick one.
+
+### Step 2: Read the issue file and spec fully
 
 Read in this order, completely:
 
-1. `plan-<issue-id>-<page-slug>.md`
-2. `issues/<issue-id>-<page-slug>.md` (acceptance criteria are the ground truth)
-3. `spec.md` (for broader behavioral context)
+1. The resolved issue file (description + implementation plan)
+2. `spec.md` (for broader behavioral context)
 
-Check for any existing checkmarks (`- [x]`) in the plan — these mark already-completed work.
+The `## Implementation Plan` section inside the issue file is the source of truth for phases and
+success criteria.
+
+Check for any existing checkmarks (`- [x]`) in the plan phases — these mark already-completed work.
 If some phases are already done, pick up from the first unchecked item.
 
 ### Step 3: Read all referenced files
@@ -113,7 +118,7 @@ This helps maintain progress across the implementation session.
 
 ### Step 6: Implement phase by phase
 
-For each phase in the plan:
+For each phase in the `## Implementation Plan` section of the issue file:
 
 **6a. Implement the changes**
 - Make exactly the changes described in the plan for this phase
@@ -134,9 +139,9 @@ How should I proceed?
 Wait for guidance before continuing.
 
 **6b. Run automated verification**
-- Run every command listed in the phase's "Automated" success criteria
+- Run every command listed in the phase's Automated success criteria
 - Fix any failures before proceeding — do not move to the next phase with failing checks
-- Check off each passing item in the plan file using file edits
+- Check off each passing item in the issue file using file edits
 
 **6c. Pause for manual verification**
 After all automated checks pass, pause and tell the user:
@@ -158,24 +163,52 @@ Wait for explicit confirmation before starting the next phase.
 Exception: if the user instructed you to run multiple phases consecutively (e.g. "implement all phases"),
 skip the pause until the final phase.
 
-### Step 7: Verify issue acceptance criteria
+### Step 7: Present test cases
 
-After all phases are complete, go back to the issue file and check each acceptance criterion:
-- Run any automated checks listed there
-- For criteria that require manual verification, list them explicitly for the user to confirm
+After all phases are complete, present the full test coverage for this issue based on the
+Testing Strategy section of the plan:
 
-Do not write the implementation log until the user confirms all manual acceptance criteria are met.
+```
+Implementation complete. Here are the test cases for this issue:
 
-### Step 8: Write the implementation log
+## Automated Tests
 
-Write `docs/features/summary/<issue-id>-<page-slug>.md`:
+[For each automated test in the Testing Strategy:]
+- File: `path/to/test-file.ext`
+- Command: [test command]
+- Covers: [what scenario this test validates]
+
+[If no automated tests were defined or implemented, say so explicitly and explain why.]
+
+## Manual Test Checklist
+
+[The complete manual testing checklist from the plan, ready to execute:]
+1. [Step]
+2. [Step]
+...
+```
+
+If tests are defined in the plan but were not yet written, ask the user:
+```
+The plan includes automated tests but they haven't been written yet.
+Should I write them now before closing? (y/n)
+```
+
+### Step 8: Ask about documentation
+
+After presenting the test cases, ask the user:
+
+```
+Would you like me to write an implementation log documenting what was done? (y/n)
+```
+
+**If yes**, write `docs/features/summary/<issue-id>-<slug>.md`:
 
 ```markdown
 # Implementation Log: <Issue Title>
 
 **Date**: YYYY-MM-DD
 **Issue**: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
-**Plan**: `.docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md`
 **Feature**: `.docs/features/feature-<N>-<slug>/`
 **Type**: prototype | functional
 **Status**: complete
@@ -212,26 +245,25 @@ Write `docs/features/summary/<issue-id>-<page-slug>.md`:
 ### Automated checks passed
 - `command` ✓
 
-### Acceptance criteria confirmed
-- [ ] [each criterion from the issue file, checked off]
+### Manual verification confirmed
+- [each manual item confirmed by the user]
 
 ## Next Steps
 
 [The next issue to implement, e.g. "proto-02 is next" or "func-01 can now start". "None" if this was the last issue.]
 ```
 
+**If no**, close without writing the log.
+
 ### Step 9: Close
 
-After writing the implementation log, respond:
+After Step 8, respond:
 
 ```
-Implementation complete.
+Done.
 
-  .docs/features/feature-<N>-<slug>/
-  └── issues/
-      └── <issue-file>.md              ✓ (acceptance criteria met)
-  plan-<issue-id>-<page-slug>.md       ✓
-  docs/features/summary/<issue-id>-<page-slug>.md ✓
+  .docs/features/feature-<N>-<slug>/issues/<issue-file>.md   ✓ (plan executed)
+  [docs/features/summary/<issue-id>-<slug>.md                ✓ (if documented)]
 
 Next step:
   /clear

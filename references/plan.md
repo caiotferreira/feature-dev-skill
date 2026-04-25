@@ -3,8 +3,9 @@
 ## Goal
 
 Read a specific issue file, the feature's `spec.md` and `research.md`, then explore the codebase
-to produce a detailed, phased implementation plan for that single issue.
-A developer (or an AI agent) must be able to execute this plan step by step without ambiguity.
+to produce a detailed, phased implementation plan. The plan is appended directly to the issue file —
+no separate plan file is created. A developer (or AI agent) must be able to execute it step by step
+without ambiguity.
 
 ---
 
@@ -13,7 +14,7 @@ A developer (or an AI agent) must be able to execute this plan step by step with
 - `<slug> <issue-id>`: provided as the command argument.
   Examples: `/plan pos-venda proto-01`, `/plan pos-venda func-02`
   The `<issue-id>` is optional — if omitted and no issues exist, a feature-level plan is produced from `research.md`.
-- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<page-slug>.md`: the issue to plan (optional)
+- `.docs/features/feature-<N>-<slug>/issues/<issue-id>-<slug>.md`: the issue to plan (optional)
 - `.docs/features/feature-<N>-<slug>/spec.md`: full feature specification
 - `.docs/features/feature-<N>-<slug>/research.md`: codebase research (required when no issue is provided)
 
@@ -73,12 +74,14 @@ Run /spec first, then /plan <slug>.
 
 ### Step 3: Explore the codebase for this issue's scope
 
-Based on what the issue (or feature, in issueless mode) requires, explore the relevant parts of the codebase:
+Based on what the issue (or feature, in issueless mode) requires, explore the relevant parts of the codebase.
 
 **For prototype issues**:
-- Find existing UI components that can be reused (look for component libraries, design system files, similar screens)
+- For each component in the issue description, check whether it already exists in the codebase
+  (use the component inventory in `research.md` as a starting point, then verify directly)
 - Identify the routing pattern to add a new page
 - Find 1–2 existing pages as reference for file structure and naming conventions
+- Find existing UI components that can be reused (component libraries, design system files)
 
 **For functional issues**:
 - Find the existing prototype files that this issue will wire up
@@ -109,7 +112,7 @@ Break implementation into phases where:
 
 **For prototype issues**, typical phase order:
 1. Route and page shell (file creation, routing registration)
-2. Component structure (layout, composition of sub-components)
+2. Component structure (layout, composition of sub-components — create any that don't exist yet)
 3. All visual states (empty, loading, filled, error — driven by local props or toggle)
 
 **For functional issues**, typical phase order:
@@ -151,54 +154,46 @@ Does this look right? Should I adjust before I write the full plan?
 
 Wait for confirmation before proceeding.
 
-### Step 7: Write the plan file
+### Step 7: Append the plan to the issue file
 
-**Issue mode:** Write `.docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md`
+**Issue mode:** Append the plan section directly to `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md`.
 
-**Issueless mode:** Write `.docs/features/feature-<N>-<slug>/plan.md`
+**Issueless mode:** Write `.docs/features/feature-<N>-<slug>/plan.md` as a standalone file.
 
-Use this structure:
+For issue mode, append this block at the end of the existing issue file:
 
 ```markdown
-# Plan: <Issue Title or Feature Name>
-
-**Date**: YYYY-MM-DD
-**Issue**: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md` ← omit in issueless mode
-**Spec**: `.docs/features/feature-<N>-<slug>/spec.md`
-**Research**: `.docs/features/feature-<N>-<slug>/research.md`
-**Feature**: feature-<N>-<slug>
-**Type**: prototype | functional | feature ← use "feature" in issueless mode
-**Mode**: issue-based | issueless
-**Status**: ready
-
 ---
 
-## Overview
+## Implementation Plan
+
+**Planned**: YYYY-MM-DD
+**Spec**: `.docs/features/feature-<N>-<slug>/spec.md`
+**Research**: `.docs/features/feature-<N>-<slug>/research.md`
+**Status**: planned
+
+### Overview
 
 [2–3 sentences: what this plan implements and why, scoped to this issue only]
 
-## Desired End State
+### Desired End State
 
 [Concrete description of what success looks like for this issue specifically]
 
-## What We Are NOT Doing
+### What We Are NOT Doing
 
 [Explicit out-of-scope items — especially important to separate prototype from functional concerns]
 
 ---
 
-## Implementation Phases
+### Phase 1: <Descriptive Name>
 
----
-
-## Phase 1: <Descriptive Name>
-
-### Goal
+#### Goal
 [One sentence]
 
-### Changes
+#### Changes
 
-#### `path/to/file.ext`
+##### `path/to/file.ext`
 **Change type**: new file | modify | delete
 **Summary**: [what changes and why]
 
@@ -206,47 +201,61 @@ Use this structure:
 // Specific code block showing the change or addition
 ```
 
-### Success Criteria
+#### Success Criteria
 
-#### Automated
+##### Automated
 - [ ] [command that must pass]
 
-#### Manual
+##### Manual
 - [ ] [observable behavior to verify by hand]
 
 > After automated verification passes, pause and ask the user to confirm manual testing before proceeding.
 
 ---
 
-## Phase 2: <Descriptive Name>
+### Phase 2: <Descriptive Name>
 
 [Same structure as Phase 1]
 
 ---
 
-## Testing Strategy
+### Testing Strategy
 
-### Automated
+#### Automated
 - [what to test, which file, which command]
 
-### Manual Testing Checklist
+#### Manual Testing Checklist
 1. [Step-by-step flow to verify this specific issue is complete]
 
-## References
+### References
 
-- Issue: `.docs/features/feature-<N>-<slug>/issues/<issue-file>.md`
 - Spec: `.docs/features/feature-<N>-<slug>/spec.md`
 - [Any specific file:line references used as anchors during planning]
 ```
 
+For issueless mode, use the same structure but wrap it in a top-level heading:
+
+```markdown
+# Plan: <Feature Name>
+
+**Date**: YYYY-MM-DD
+**Spec**: `.docs/features/feature-<N>-<slug>/spec.md`
+**Research**: `.docs/features/feature-<N>-<slug>/research.md`
+**Feature**: feature-<N>-<slug>
+**Mode**: issueless
+**Status**: planned
+
+[same sections as above]
+```
+
 ### Step 8: Confirm and close
 
-After writing the plan file, respond:
+After appending (or writing) the plan, respond:
 
 **Issue mode:**
 ```
-Plan complete. Artifact saved to:
-  .docs/features/feature-<N>-<slug>/plans/plan-<issue-id>-<page-slug>.md
+Plan complete. Appended to:
+  .docs/features/feature-<N>-<slug>/issues/<issue-file>.md
 
 Next step:
   /clear
@@ -272,8 +281,9 @@ Next step:
 - All open questions must be resolved before writing.
 - For prototype issues: the plan must never include API calls, database writes, or business logic.
 - For functional issues: the plan must reference the specific prototype files it will modify.
-- In issueless mode: the plan covers the full feature scope defined in `spec.md` and `research.md`. It is not tied to a single issue, but must still be broken into clearly scoped phases.
+- For prototype issues: if a component doesn't exist in the codebase, the plan must include a phase to create it. Never assume a component exists without verifying.
+- In issueless mode: the plan covers the full feature scope defined in `spec.md` and `research.md`.
 - Code blocks in the plan should be illustrative but accurate — read the actual files to write them.
 - Success criteria must separate automated checks (runnable commands) from manual checks (human verification).
-- In issue mode: each plan file is scoped to exactly one issue. Never plan two issues in the same file.
+- Each plan is scoped to exactly one issue. Never plan two issues in the same session.
 - Running `/break` is not required before `/plan`. When skipped, issueless mode applies.

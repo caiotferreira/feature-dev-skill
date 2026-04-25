@@ -24,20 +24,21 @@ organized under `.docs/features/` in the project root, with auto-numbered folder
 .docs/features/
 ├── feature-1-pos-venda-clientes/
 │   ├── spec.md
-│   ├── issues/
-│   │   ├── proto-01-tela-dashboard.md
-│   │   ├── proto-02-tela-clientes.md
-│   │   ├── func-01-tela-dashboard.md
-│   │   └── func-02-tela-clientes.md
-│   ├── plan-proto-01-tela-dashboard.md
-│   ├── plan-func-01-tela-dashboard.md
-│   ├── implementation-proto-01-tela-dashboard.md
-│   └── implementation-func-01-tela-dashboard.md
+│   ├── research.md
+│   └── issues/
+│       ├── proto-01-tela-dashboard.md      ← description + plan (appended by /plan)
+│       ├── proto-02-tela-clientes.md
+│       ├── func-01-salvar-cliente.md       ← one per behavior
+│       ├── func-02-excluir-cliente.md
+│       └── func-03-filtrar-lista.md
 └── feature-2-checkout-flow/
     └── ...
 ```
 
 Folder naming convention: `feature-<N>-<slug>` where N is an auto-incremented integer.
+
+Issue files are the single source of truth for each unit of work. `/break` writes the description;
+`/plan` appends the implementation plan to the same file. No separate plan files are created.
 
 ---
 
@@ -57,7 +58,7 @@ Examples:
 - Folders 1 and 2 exist → create `feature-3-checkout-flow/`
 - User says "feature 5" → create `feature-5-checkout-flow/` regardless of what exists
 
-### On `/break`, `/plan`, and `/implement` (resolve existing folder)
+### On `/break`, `/research`, `/plan`, and `/implement` (resolve existing folder)
 
 The user passes only the slug (e.g. `/plan pos-venda proto-01`).
 Search `.docs/features/` for any folder whose name contains the slug.
@@ -83,9 +84,9 @@ Overview, Pages, Components, and Behaviors (with GIVEN/WHEN/THEN scenarios).
 
 ### `/break <slug>`
 
-**Purpose**: Read `spec.md` and generate two batches of issue files inside `issues/`:
-first prototype issues (visual only, no functionality), then functional issues (wiring each
-prototype to real data, APIs, and backend logic).
+**Purpose**: Read `spec.md` and generate issue files inside `issues/`: one prototype issue per page
+(visual only), and one functional issue per behavior defined in the spec. Each file contains a
+detailed description only — the plan is added later by `/plan`.
 
 **When to use**: After `/spec` completes and you've done `/clear`.
 
@@ -95,11 +96,11 @@ prototype to real data, APIs, and backend logic).
 
 ### `/research <slug>`
 
-**Purpose**: Understand the codebase impact for the entire feature before planning individual issues.
-Reads `spec.md` as context before exploring the codebase.
+**Purpose**: Read `spec.md` and all issue files, then explore the codebase to map impact, inventory
+existing components, and document patterns. Produces `research.md` as the reference for all `/plan` steps.
 
-**When to use**: After `/break` completes and you've done `/clear`. Optional but recommended
-before planning the first issue of a feature.
+**When to use**: After `/break` completes and you've done `/clear`. Recommended before planning
+the first issue.
 
 **Full instructions**: See `references/research.md`
 
@@ -107,8 +108,8 @@ before planning the first issue of a feature.
 
 ### `/plan <slug> <issue-id>`
 
-**Purpose**: Read a specific issue file, the feature's `spec.md` and `research.md`, explore the
-codebase, and produce a phased implementation plan scoped to that single issue.
+**Purpose**: Read a specific issue file, `spec.md`, and `research.md`, explore the codebase, and
+append a phased implementation plan directly to the issue file.
 
 **When to use**: Before implementing each issue. Run once per issue.
 
@@ -118,8 +119,8 @@ codebase, and produce a phased implementation plan scoped to that single issue.
 
 ### `/implement <slug> <issue-id>`
 
-**Purpose**: Execute the issue's plan file phase by phase, verify each phase, and write an
-implementation log.
+**Purpose**: Execute the plan embedded in the issue file phase by phase, verify each phase, present
+test cases, and optionally write an implementation log.
 
 **When to use**: After `/plan` completes for a specific issue and you've done `/clear`.
 
@@ -132,10 +133,10 @@ implementation log.
 | Step | Command | Reads | Writes |
 |------|---------|-------|--------|
 | 1 | `/spec <description>` | nothing | `spec.md` |
-| 2 | `/break <slug>` | `spec.md` | `issues/proto-NN-*.md` + `issues/func-NN-*.md` |
-| 3 | `/research <slug>` | `spec.md` + codebase | `research.md` |
-| 4 | `/plan <slug> <issue-id>` | issue file + `spec.md` + `research.md` + codebase | `plan-<issue-id>-*.md` |
-| 5 | `/implement <slug> <issue-id>` | plan file + issue file + `spec.md` | code + `implementation-<issue-id>-*.md` |
+| 2 | `/break <slug>` | `spec.md` | `issues/proto-NN-*.md` (1 per page) + `issues/func-NN-*.md` (1 per behavior) |
+| 3 | `/research <slug>` | `spec.md` + issues + codebase | `research.md` |
+| 4 | `/plan <slug> <issue-id>` | issue file + `spec.md` + `research.md` + codebase | appends plan to issue file |
+| 5 | `/implement <slug> <issue-id>` | issue file (desc + plan) + `spec.md` | code + optional `docs/features/summary/*.md` |
 
 ---
 
@@ -174,4 +175,5 @@ implementation log.
 - Never skip steps or merge two steps into one context window.
 - Prototype issues must never contain real API calls, database writes, or business logic.
 - Functional issues must never re-implement visual work already covered by the corresponding prototype.
+- Functional issues are atomic: one behavior per issue.
 - If `/plan` or `/implement` are called without arguments, list existing feature folders and issue files and ask the user to pick.
