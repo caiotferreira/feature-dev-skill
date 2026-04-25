@@ -1,3 +1,8 @@
+---
+name: feature-dev-plan
+description: Use when the user invokes /plan, says "criar plano", "planejar issue", "planejar implementação", or wants to write a phased implementation plan for a specific issue file before coding.
+---
+
 # /plan — Implementation Plan Agent
 
 ## Goal

@@ -1,3 +1,8 @@
+---
+name: feature-dev-break
+description: Use when the user invokes /break, says "quebrar em issues", "criar issues", "decompor spec", or wants to convert a spec.md into prototype and functional issue files.
+---
+
 # /break — Issue Breakdown Agent
 
 ## Goal

@@ -1,3 +1,8 @@
+---
+name: feature-dev-implement
+description: Use when the user invokes /implement, says "implementar", "executar plano", "codar", or wants to execute a planned issue's implementation phase by phase with verification checkpoints.
+---
+
 # /implement — Implementation Agent
 
 ## Goal

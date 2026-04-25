@@ -26,7 +26,7 @@ The spec becomes the source of truth. Every subsequent step (research, planning,
 | 4 | `/plan <slug> <issue-id>` | A phased implementation plan scoped to one issue, grounded in the spec and the codebase |
 | 5 | `/implement <slug> <issue-id>` | Executed code, phase by phase, with verification checkpoints |
 
-Each command runs in a fresh context window (`/clear` between them). All artifacts are saved to `docs/features/feature-<N>-<slug>/` in the project root.
+Each command runs in a fresh context window (`/clear` between them). All artifacts are saved to `.docs/features/feature-<N>-<slug>/` in the project root.
 
 ---
 
@@ -49,15 +49,15 @@ The agent reads `spec.md` and generates issue files in two batches:
 
 **Batch 1 — Prototype issues** (`proto-NN-*.md`): one per page. Scope is visual only. No API calls, no database writes, no business logic. Static data and local state are acceptable. The goal is a pixel-accurate screen that can be navigated and inspected.
 
-**Batch 2 — Functional issues** (`func-NN-*.md`): one per page (or more if a page has independent behavior clusters). Each functional issue depends on its corresponding prototype being complete. Scope is wiring the visual shell to real data, form submission, API calls, error handling, and all behaviors from the spec.
+**Batch 2 — Functional issues** (`func-NN-*.md`): one per behavior defined in the spec. Each functional issue depends on its corresponding prototype being complete. Scope is wiring the visual shell to real data, form submission, API calls, error handling, and all behaviors from the spec.
 
 ### Step 3 — `/research`
 
-Runs once per feature, before planning any issue. The agent reads `spec.md` and then explores the codebase to produce `research.md`: which files will change, which existing patterns to follow, which dependencies are already available, and what risks exist.
+Runs once per feature, before planning any issue. The agent reads `spec.md` and all issue files, then explores the codebase to produce `research.md`: which files will change, which existing patterns to follow, which dependencies are already available, and what risks exist.
 
 ### Step 4 — `/plan <slug> <issue-id>`
 
-Runs once per issue. The agent reads the issue file, `spec.md`, and `research.md`, then explores the relevant parts of the codebase to produce a plan file. The plan contains exact file paths, illustrative code blocks, and success criteria split between automated (runnable commands) and manual (human verification).
+Runs once per issue. The agent reads the issue file, `spec.md`, and `research.md`, then explores the relevant parts of the codebase to produce a phased implementation plan — appended directly to the issue file. The plan contains exact file paths, illustrative code blocks, and success criteria split between automated (runnable commands) and manual (human verification).
 
 Before writing the full plan, the agent presents the proposed phase structure and waits for confirmation.
 
@@ -72,24 +72,24 @@ A guard rule enforces the proto/func boundary: if a prototype implementation sta
 ## Folder structure
 
 ```
-docs/features/
-├── summary/
-│   ├── proto-01-tela-dashboard.md
-│   ├── func-01-tela-dashboard.md
-│   └── ...
-└── feature-1-pos-venda-clientes/
-    ├── spec.md
-    ├── research.md
-    ├── issues/
-    │   ├── proto-01-tela-dashboard.md
-    │   ├── proto-02-tela-clientes.md
-    │   ├── func-01-tela-dashboard.md
-    │   └── func-02-tela-clientes.md
-    ├── plan-proto-01-tela-dashboard.md
-    └── plan-func-01-tela-dashboard.md
+.docs/features/
+├── feature-1-pos-venda-clientes/
+│   ├── spec.md
+│   ├── research.md
+│   └── issues/
+│       ├── proto-01-tela-dashboard.md
+│       ├── proto-02-tela-clientes.md
+│       ├── func-01-salvar-cliente.md
+│       └── func-02-excluir-cliente.md
+└── feature-2-checkout-flow/
+    └── ...
+
+docs/features/summary/
+├── proto-01-tela-dashboard.md
+└── func-01-salvar-cliente.md
 ```
 
-After each `/implement` run, the implementation log is written to `docs/features/summary/<issue-id>-<page-slug>.md`. This keeps a flat, cross-feature summary index at the project root level, separate from the per-feature planning artifacts.
+The plan is appended directly to each issue file by `/plan` — no separate plan files are created. After each `/implement` run, the optional implementation log is written to `docs/features/summary/<issue-id>-<slug>.md`.
 
 ---
 
@@ -133,45 +133,52 @@ cd feature-dev-skill
 ./setup.sh
 ```
 
-The script:
-
-1. Creates `~/.claude/skills/` and `~/.codex/skills/` if they don't exist
-2. Adds a symlink from each skills directory to the `feature-dev/` folder inside this repo
+The script creates symlinks for each of the five skills into `~/.claude/skills/` and `~/.codex/skills/`:
 
 ```
-~/.claude/skills/feature-dev -> /path/to/feature-dev-skill/feature-dev
-~/.codex/skills/feature-dev  -> /path/to/feature-dev-skill/feature-dev
+~/.claude/skills/feature-dev-spec       -> /path/to/feature-dev-skill/skills/feature-dev-spec
+~/.claude/skills/feature-dev-break      -> /path/to/feature-dev-skill/skills/feature-dev-break
+~/.claude/skills/feature-dev-research   -> /path/to/feature-dev-skill/skills/feature-dev-research
+~/.claude/skills/feature-dev-plan       -> /path/to/feature-dev-skill/skills/feature-dev-plan
+~/.claude/skills/feature-dev-implement  -> /path/to/feature-dev-skill/skills/feature-dev-implement
 ```
 
 Because the install uses symlinks, any changes you make to the skill files in this repository take effect immediately — no reinstall needed.
-
-The skill is then available globally in Claude Code and Codex without copying files into individual projects.
 
 ---
 
 ## Repository structure
 
 ```
-feature-dev/
+feature-dev-skill/
 ├── README.md
-├── SKILL.md
-└── references/
-    ├── spec.md
-    ├── break.md
-    ├── research.md
-    ├── plan.md
-    └── implement.md
+├── setup.sh
+└── skills/
+    ├── feature-dev-spec/
+    │   └── SKILL.md
+    ├── feature-dev-break/
+    │   └── SKILL.md
+    ├── feature-dev-research/
+    │   └── SKILL.md
+    ├── feature-dev-plan/
+    │   └── SKILL.md
+    └── feature-dev-implement/
+        └── SKILL.md
 ```
+
+Each skill is self-contained: its `SKILL.md` holds the full instructions for that command with no external references. This means each command loads exactly the context it needs — nothing more.
 
 ---
 
 ## Key design decisions
 
+**Why five separate skills instead of one.** Each command is a distinct skill with its own description and trigger conditions. The model loads only the skill relevant to the current command, instead of loading a hub that routes to references. This reduces context load per command and makes trigger matching more precise.
+
 **Why spec before research.** The `/research` command reads `spec.md` before exploring the codebase. This means the agent understands what the feature must do before it sees how the codebase is structured. Without this order, the agent anchors its understanding to existing patterns and builds toward them instead of toward the spec.
 
 **Why prototype before functional.** Separating visual from functional forces a clean interface between layout and behavior. The functional issue receives a stable, reviewed visual shell and wires into it. This eliminates the common failure mode where an AI mixes layout work with data fetching in the same pass, producing code that is hard to review and harder to change.
 
-**Why one plan per issue.** A single plan file scoped to one issue means the agent's context window is focused. It reads one issue, one spec, one research document, and the relevant files. It does not try to hold the entire feature in mind at once.
+**Why one plan per issue.** A single plan scoped to one issue means the agent's context window is focused. It reads one issue, one spec, one research document, and the relevant files. It does not try to hold the entire feature in mind at once.
 
 **Why `/clear` between every step.** Each command is designed to run with a clean context. Accumulated conversation history adds noise and can cause the agent to anchor on earlier assumptions. The artifacts on disk are the memory.
 

@@ -1,3 +1,8 @@
+---
+name: feature-dev-research
+description: Use when the user invokes /research, says "pesquisar codebase", "mapear impacto", "explorar código", or needs to analyze the codebase impact of a feature before planning individual issues.
+---
+
 # /research — Codebase Research Agent
 
 ## Goal

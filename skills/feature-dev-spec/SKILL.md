@@ -1,3 +1,8 @@
+---
+name: feature-dev-spec
+description: Use when the user invokes /spec, says "criar spec", "escrever especificação", "começar feature", or wants to document a new feature before development. Triggered at the start of every new feature workflow.
+---
+
 # /spec — Spec Writer Agent
 
 ## Goal

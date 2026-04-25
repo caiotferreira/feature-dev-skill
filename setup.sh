@@ -2,12 +2,19 @@
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+SKILLS_DIR="$REPO_DIR/skills"
 
 mkdir -p ~/.claude/skills ~/.codex/skills
 
-ln -sf "$REPO_DIR/feature-dev" ~/.claude/skills/feature-dev
-ln -sf "$REPO_DIR/feature-dev" ~/.codex/skills/feature-dev
+SKILLS=(spec break research plan implement)
+
+for skill in "${SKILLS[@]}"; do
+  ln -sf "$SKILLS_DIR/feature-dev-$skill" ~/.claude/skills/feature-dev-$skill
+  ln -sf "$SKILLS_DIR/feature-dev-$skill" ~/.codex/skills/feature-dev-$skill
+done
 
 echo "Symlinks criados:"
-echo "  ~/.claude/skills/feature-dev -> $REPO_DIR/feature-dev"
-echo "  ~/.codex/skills/feature-dev  -> $REPO_DIR/feature-dev"
+for skill in "${SKILLS[@]}"; do
+  echo "  ~/.claude/skills/feature-dev-$skill -> $SKILLS_DIR/feature-dev-$skill"
+  echo "  ~/.codex/skills/feature-dev-$skill  -> $SKILLS_DIR/feature-dev-$skill"
+done
