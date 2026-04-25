@@ -125,21 +125,27 @@ After each `/implement` run, the implementation log is written to `docs/features
 
 ## Installation
 
-**Per project:**
+Clone this repository and run `setup.sh`:
+
 ```bash
-npx skills add ./path/to/feature-dev
+git clone <repo-url>
+cd feature-dev-skill
+./setup.sh
 ```
 
-**Global (via `~/.claude/CLAUDE.md`):**
+The script:
 
-Add the following to your global Claude config so the skill is available in every project without copying files:
+1. Creates `~/.claude/skills/` and `~/.codex/skills/` if they don't exist
+2. Adds a symlink from each skills directory to the `feature-dev/` folder inside this repo
 
-```markdown
-## Global skills
-
-Before any task, read and follow the instructions in:
-~/skills/feature-dev/SKILL.md
 ```
+~/.claude/skills/feature-dev -> /path/to/feature-dev-skill/feature-dev
+~/.codex/skills/feature-dev  -> /path/to/feature-dev-skill/feature-dev
+```
+
+Because the install uses symlinks, any changes you make to the skill files in this repository take effect immediately — no reinstall needed.
+
+The skill is then available globally in Claude Code and Codex without copying files into individual projects.
 
 ---
 
