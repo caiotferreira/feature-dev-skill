@@ -126,6 +126,19 @@ Break implementation into phases where:
 3. Form submission and mutations
 4. Error handling and edge cases
 
+Classify each phase before proposing it:
+
+- A phase that changes functional behavior **must** include an `Automated Test Contract`.
+- Purely visual prototype work does not need an artificial unit test; define relevant lint,
+  typecheck, or build commands plus visual/manual proof instead.
+- Meaningful local prototype behavior (modal, filter, selection, or client-side validation) may
+  have a component test.
+
+For functional phases, the contract must name test files, level (`unit`, `integration`, or `e2e`),
+observable happy-path/error/edge behavior proportional to risk, one focused command, and the
+final issue commands. Detect the project’s existing scripts and package manager; `pnpm` in an
+example is never an assumption.
+
 ### Step 6: Present structure for confirmation
 
 Before writing the full plan, show the user:
@@ -206,15 +219,38 @@ For issue mode, append this block at the end of the existing issue file:
 // Specific code block showing the change or addition
 ```
 
+#### Automated Test Contract
+
+- **Test file:** `path/to/behavior.test.ext`
+- **Level:** unit | integration | e2e
+- **Behaviors:**
+  - [observable happy-path behavior]
+  - [relevant error behavior]
+  - [relevant boundary behavior]
+- **Focused command:** `[project test command] path/to/behavior.test.ext`
+- **Final verification:** `[relevant full test, lint, typecheck, and/or build commands]`
+
+For a valid visual-only exception, use this explicit replacement:
+
+```markdown
+#### Automated Test Contract
+
+**Exception:** Purely visual prototype work; no meaningful automated behavior boundary changed.
+**Automated checks:** [lint, typecheck, and/or build commands]
+**Manual/visual proof:** [specific states or viewport checks]
+```
+
 #### Success Criteria
 
 ##### Automated
-- [ ] [command that must pass]
+- [ ] [focused command and phase-specific checks from the contract]
 
 ##### Manual
 - [ ] [observable behavior to verify by hand]
 
-> After automated verification passes, pause and ask the user to confirm manual testing before proceeding.
+> Do not pause after ordinary phases. Consolidate manual checks at the issue end. Pause only for
+> material visual/UX judgment, an unautomated e2e flow, migration/data change, permissions,
+> security, payment/high-risk work, or a product decision that needs the user.
 
 ---
 
@@ -227,7 +263,9 @@ For issue mode, append this block at the end of the existing issue file:
 ### Testing Strategy
 
 #### Automated
-- [what to test, which file, which command]
+- [all phase contracts, focused commands, and final issue checks]
+- Final verification must be fresh immediately before closing; earlier output and checked boxes
+  are not evidence.
 
 #### Manual Testing Checklist
 1. [Step-by-step flow to verify this specific issue is complete]
@@ -290,5 +328,13 @@ Next step:
 - In issueless mode: the plan covers the full feature scope defined in `spec.md` and `research.md`.
 - Code blocks in the plan should be illustrative but accurate — read the actual files to write them.
 - Success criteria must separate automated checks (runnable commands) from manual checks (human verification).
+- Every functional phase must contain `#### Automated Test Contract`. An omission is valid only
+  when it states the scoped visual exception and why no automated boundary is meaningful.
+- A contract must identify behaviors and a test file; a generic test-suite command is not a
+  substitute for regression coverage.
+- Contracts test observable behavior and avoid mock-call assertions, implementation-coupled
+  expectations, excessive mocks, and coverage-only tests.
+- Functional/data contracts cover relevant happy path, error path, and edge case proportionally;
+  static visual composition does not get a fake test.
 - Each plan is scoped to exactly one issue. Never plan two issues in the same session.
 - Running `/break` is not required before `/plan`. When skipped, issueless mode applies.

@@ -24,7 +24,7 @@ The spec becomes the source of truth. Every subsequent step (research, planning,
 | 2 | `/break <slug>` | Two batches of issue files: prototype issues (visual only) and functional issues (real data and logic) |
 | 3 | `/research <slug>` | A codebase map: impacted files, existing patterns to follow, dependencies, risks |
 | 4 | `/plan <slug> <issue-id>` | A phased implementation plan scoped to one issue, grounded in the spec and the codebase |
-| 5 | `/implement <slug> <issue-id>` | Executed code, phase by phase, with verification checkpoints |
+| 5 | `/implement <slug> <issue-id>` | Executed code with focused TDD, factual verification, and one final independent review |
 
 Each command runs in a fresh context window (`/clear` between them). All artifacts are saved to `.docs/features/feature-<N>-<slug>/` in the project root.
 
@@ -57,13 +57,15 @@ Runs once per feature, before planning any issue. The agent reads `spec.md` and 
 
 ### Step 4 — `/plan <slug> <issue-id>`
 
-Runs once per issue. The agent reads the issue file, `spec.md`, and `research.md`, then explores the relevant parts of the codebase to produce a phased implementation plan — appended directly to the issue file. The plan contains exact file paths, illustrative code blocks, and success criteria split between automated (runnable commands) and manual (human verification).
+Runs once per issue. The agent reads the issue file, `spec.md`, and `research.md`, then explores the relevant parts of the codebase to produce a phased implementation plan — appended directly to the issue file. Functional phases include an **Automated Test Contract**: test file, level, observable behaviors, focused command, and final issue checks. The plan detects the project’s existing package manager and scripts; `pnpm` is never assumed.
 
 Before writing the full plan, the agent presents the proposed phase structure and waits for confirmation.
 
 ### Step 5 — `/implement <slug> <issue-id>`
 
-Executes the plan phase by phase. After each phase, automated checks run. If they pass, the agent pauses and asks for manual verification before continuing. If anything in the codebase diverges from what the plan expected, the agent stops and reports the mismatch instead of improvising.
+Executes functional contracts with a light RED → GREEN cycle: write the test first, prove its focused command fails for the intended missing behavior, implement the minimum, then record GREEN and phase checks. It runs only focused tests during development and final commands once at issue close — not the full suite after every edit.
+
+Routine phases continue without a human checkpoint. Manual validation is consolidated at the end; it pauses only for meaningful visual/UX judgment, unautomated e2e flows, data migrations, security/permission/payment/high-risk work, or a product decision. Every issue ends with fresh final-command output and one independent review of the spec, plan, test contracts, implementation report, and base-to-HEAD diff. Critical and Important findings are fixed before closure; a second review is exceptional rather than automatic.
 
 A guard rule enforces the proto/func boundary: if a prototype implementation starts writing a fetch call or a database query, the agent stops. If a functional implementation starts re-doing layout work, the agent stops and references the existing prototype instead.
 
@@ -80,16 +82,18 @@ A guard rule enforces the proto/func boundary: if a prototype implementation sta
 │       ├── proto-01-tela-dashboard.md
 │       ├── proto-02-tela-clientes.md
 │       ├── func-01-salvar-cliente.md
-│       └── func-02-excluir-cliente.md
+│       ├── func-02-excluir-cliente.md
+│       └── .runs/
+│           └── func-01/
+│               ├── progress.md
+│               ├── implement-report.md
+│               └── final-review.md
 └── feature-2-checkout-flow/
     └── ...
 
-docs/features/summary/
-├── proto-01-tela-dashboard.md
-└── func-01-salvar-cliente.md
 ```
 
-The plan is appended directly to each issue file by `/plan` — no separate plan files are created. After each `/implement` run, the optional implementation log is written to `docs/features/summary/<issue-id>-<slug>.md`.
+The plan is appended directly to each issue file by `/plan` — no separate plan files are created. Each implementation run keeps only the three persistent artifacts in `issues/.runs/<issue-id>/`, so interrupted work resumes without repeating completed phases.
 
 ---
 
@@ -145,6 +149,10 @@ The script creates symlinks for each of the five skills into `~/.claude/skills/`
 
 Because the install uses symlinks, any changes you make to the skill files in this repository take effect immediately — no reinstall needed.
 
+To update an existing installation, pull the repository changes. Existing symlinks point to the
+same directories, so no reinstall is needed. If the repository was moved or the links are absent,
+run `./setup.sh` again to recreate them.
+
 ---
 
 ## Repository structure
@@ -179,6 +187,8 @@ Each skill is self-contained: its `SKILL.md` holds the full instructions for tha
 **Why prototype before functional.** Separating visual from functional forces a clean interface between layout and behavior. The functional issue receives a stable, reviewed visual shell and wires into it. This eliminates the common failure mode where an AI mixes layout work with data fetching in the same pass, producing code that is hard to review and harder to change.
 
 **Why one plan per issue.** A single plan scoped to one issue means the agent's context window is focused. It reads one issue, one spec, one research document, and the relevant files. It does not try to hold the entire feature in mind at once.
+
+**Why contracts instead of a heavyweight test process.** Functional behavior gets a small, concrete test contract and RED/GREEN proof; visual-only prototype work gets honest visual/manual evidence instead of coverage theater. The only subagent review is the final independent issue review, not a dispatch and re-review loop for each phase.
 
 **Why `/clear` between every step.** Each command is designed to run with a clean context. Accumulated conversation history adds noise and can cause the agent to anchor on earlier assumptions. The artifacts on disk are the memory.
 
